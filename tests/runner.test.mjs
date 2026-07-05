@@ -197,6 +197,16 @@ describe("runner MVP guards", () => {
     assert.equal(await claudeHealth(page), "login_required");
   });
 
+  it("reports public provider home pages without composer as login required", async () => {
+    const page = {
+      url: () => "https://claude.ai/",
+      locator: () => ({ count: async () => 0 })
+    };
+
+    assert.equal(await chatgptHealth(page), "login_required");
+    assert.equal(await claudeHealth(page), "login_required");
+  });
+
   it("does not claim a second task while one is active", async () => {
     const config = testConfig();
     let claimCount = 0;
