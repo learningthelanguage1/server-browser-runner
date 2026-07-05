@@ -12,3 +12,4 @@
 - 2026-07-05 resolved: Runner now registers local artifact metadata with Brain before submitting spooled results.
 - 2026-07-05 resolved: Runner now writes and uploads a diagnostic log artifact for failed tasks.
 - 2026-07-05 resolved: Browser adapters now keep failure screenshots when provider-page execution fails before the page closes.
+- 2026-07-05 resolved: Runner test script now works through the repo-pinned package manager without requiring a global `pnpm` shim inside lifecycle scripts.

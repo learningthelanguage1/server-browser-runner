@@ -6,7 +6,7 @@
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "pnpm build && node --test tests/*.test.mjs",
+    "test": "tsc -p tsconfig.json && node --test tests/*.test.mjs",
     "runner": "node dist/index.js"
   },
   "dependencies": {
