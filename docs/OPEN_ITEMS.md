@@ -15,3 +15,4 @@
 - 2026-07-05 resolved: Runner test script now works through the repo-pinned package manager without requiring a global `pnpm` shim inside lifecycle scripts.
 - 2026-07-05 resolved: Runner active-task locking now has regression proof that a second claim is skipped while a task is still running.
 - 2026-07-05 resolved: Internal browser self-check now opens the owned test page and verifies the composer/send controls before reporting ready.
+- 2026-07-05 resolved: Internal browser adapter now has a repeatable smoke proof command for send, capture, marker cleanup, and screenshot artifact creation.
