@@ -37,13 +37,15 @@ export async function preflight(config: RunnerConfig, env: NodeJS.ProcessEnv = p
 }
 
 export async function preflightWithEnvFile(config: RunnerConfig, path: string) {
-  return envFromFile(path).then(
-    (env) => preflight(config, env),
-    (error) => ({
+  try {
+    return await preflight(config, await envFromFile(path));
+  } catch (error) {
+    const result = await preflight(config);
+    return {
       ok: false,
-      checks: [{ name: "env_file", status: "fail" as const, details: String(error) }]
-    })
-  );
+      checks: [{ name: "env_file", status: "fail" as const, details: String(error) }, ...result.checks]
+    };
+  }
 }
 
 export async function envFromFile(path: string, base: NodeJS.ProcessEnv = process.env) {

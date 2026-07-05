@@ -211,6 +211,7 @@ describe("runner MVP guards", () => {
     assert.equal(result.ok, false);
     assert.equal(result.checks[0].name, "env_file");
     assert.equal(result.checks[0].status, "fail");
+    assert.ok(result.checks.find((check) => check.name === "runner_secret"));
   });
 });
 
