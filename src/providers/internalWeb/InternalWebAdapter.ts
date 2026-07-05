@@ -29,7 +29,7 @@ export class InternalWebAdapter implements ProviderAdapter {
         await page.keyboard.insertText(task.prompt);
       });
       await page.locator("button:has-text('Send'), button[type='submit']").first().click();
-      const answer = page.locator("[data-testid='assistant-response'], .assistant-response, main").last();
+      const answer = page.locator("[data-testid='assistant-response'], .assistant-response").first();
       const done = await waitForDoneMarkerOrStable(answer, task.expected_output?.done_marker, (task.timeout_seconds ?? 300) * 1000);
       if (done.status === "timeout") throw new Error("RESPONSE_TIMEOUT");
       const captured = await captureLastAnswer(page, answer);
