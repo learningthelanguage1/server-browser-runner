@@ -170,6 +170,17 @@ describe("runner MVP guards", () => {
     assert.equal(await claudeHealth(page), "human_check_required");
   });
 
+  it("requires send controls before provider health is ready", async () => {
+    const page = {
+      locator: (selector) => ({
+        count: async () => (selector.includes("textarea") || selector.includes("contenteditable") ? 1 : 0)
+      })
+    };
+
+    assert.equal(await chatgptHealth(page), "selector_broken");
+    assert.equal(await claudeHealth(page), "selector_broken");
+  });
+
   it("does not claim a second task while one is active", async () => {
     const config = testConfig();
     let claimCount = 0;

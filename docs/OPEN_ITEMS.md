@@ -22,3 +22,4 @@
 - 2026-07-05 resolved: Runner preflight can now read the same env file used by systemd without starting the service.
 - 2026-07-05 resolved: Empty answer capture now fails with `RESPONSE_EMPTY` instead of reporting a false success.
 - 2026-07-05 resolved: ChatGPT and Claude human-check screens now report `CAPTCHA_OR_HUMAN_CHECK` instead of generic selector or unknown errors.
+- 2026-07-05 resolved: ChatGPT and Claude self-checks now require both composer and send controls before reporting ready.
