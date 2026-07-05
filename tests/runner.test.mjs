@@ -8,6 +8,7 @@ import { assertAllowedDomain } from "../dist/security/DomainAllowlist.js";
 import { assertProviderPermission } from "../dist/security/PermissionGate.js";
 import { LocalSpool } from "../dist/runner/LocalSpool.js";
 import { RunnerLoop } from "../dist/runner/RunnerLoop.js";
+import { browserFailedResult } from "../dist/providers/browserFailureResult.js";
 
 describe("runner MVP guards", () => {
   it("fake echo returns expected output and marker", async () => {
@@ -113,6 +114,30 @@ describe("runner MVP guards", () => {
     await new RunnerLoop(config, brain, {}).runOnce();
 
     assert.equal(new LocalSpool(config.runner.local_spool_path).due().length, 0);
+  });
+
+  it("keeps browser failure screenshot artifacts", () => {
+    const result = browserFailedResult(
+      "runner_1",
+      {
+        task_id: "task_login",
+        job_type: "llm_browser_prompt",
+        provider: "chatgpt",
+        adapter: "browser",
+        target_url: "https://chatgpt.com/",
+        prompt: "Say only OK"
+      },
+      "chatgpt",
+      "https://chatgpt.com/",
+      new Error("LOGIN_REQUIRED"),
+      [{ type: "screenshot", path: "/tmp/failure.png" }]
+    );
+
+    assert.equal(result.status, "failed");
+    assert.equal(result.error_code, "LOGIN_REQUIRED");
+    assert.equal(result.retryable, false);
+    assert.equal(result.provider_receipt.url_host, "chatgpt.com");
+    assert.equal(result.artifacts[0].type, "screenshot");
   });
 });
 

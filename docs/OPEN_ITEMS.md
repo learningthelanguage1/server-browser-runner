@@ -11,3 +11,4 @@
 - 2026-07-05 resolved: Runner workspace metadata now declares the root package so server-side `pnpm install` can run from the deployed checkout.
 - 2026-07-05 resolved: Runner now registers local artifact metadata with Brain before submitting spooled results.
 - 2026-07-05 resolved: Runner now writes and uploads a diagnostic log artifact for failed tasks.
+- 2026-07-05 resolved: Browser adapters now keep failure screenshots when provider-page execution fails before the page closes.

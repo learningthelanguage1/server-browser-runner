@@ -7,6 +7,7 @@ import { ScreenshotService } from "../../browser/ScreenshotService.js";
 import { chatgptSelectors } from "./chatgptSelectors.js";
 import { chatgptHealth } from "./chatgptHealth.js";
 import { assertProviderPermission } from "../../security/PermissionGate.js";
+import { browserFailedResult } from "../browserFailureResult.js";
 
 export class ChatGptWebAdapter implements ProviderAdapter {
   name = "chatgpt_web_adapter";
@@ -64,6 +65,10 @@ export class ChatGptWebAdapter implements ProviderAdapter {
         provider_receipt: { provider: this.provider, adapter_version: "0.1.0", url_host: new URL(page.url()).hostname },
         artifacts
       };
+    } catch (error) {
+      const screenshot = await new ScreenshotService(this.config).capture(page, task.task_id).catch(() => undefined);
+      if (screenshot) artifacts.push(screenshot);
+      return browserFailedResult(this.config.runner.id, task, this.provider, page.url(), error, artifacts);
     } finally {
       await context.close();
     }

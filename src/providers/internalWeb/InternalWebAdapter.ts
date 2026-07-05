@@ -4,6 +4,7 @@ import { BrowserProfileManager } from "../../browser/BrowserProfileManager.js";
 import { waitForDoneMarkerOrStable } from "../../browser/CompletionDetector.js";
 import { captureLastAnswer } from "../../browser/CaptureEngine.js";
 import { ScreenshotService } from "../../browser/ScreenshotService.js";
+import { browserFailedResult } from "../browserFailureResult.js";
 
 export class InternalWebAdapter implements ProviderAdapter {
   name = "internal_web_adapter";
@@ -47,6 +48,10 @@ export class InternalWebAdapter implements ProviderAdapter {
         provider_receipt: { provider: this.provider, adapter_version: "0.1.0", url_host: new URL(page.url()).hostname },
         artifacts
       };
+    } catch (error) {
+      const screenshot = await new ScreenshotService(this.config).capture(page, task.task_id).catch(() => undefined);
+      if (screenshot) artifacts.push(screenshot);
+      return browserFailedResult(this.config.runner.id, task, this.provider, page.url(), error, artifacts);
     } finally {
       await context.close();
     }
