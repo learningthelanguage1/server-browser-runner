@@ -83,6 +83,37 @@ describe("runner MVP guards", () => {
 
     assert.equal(new LocalSpool(config.runner.local_spool_path).due().length, 0);
   });
+
+  it("writes and uploads a failure log artifact", async () => {
+    const config = testConfig();
+    const brain = {
+      claimNextTask: async () => ({
+        task_id: "task_bad_domain",
+        job_type: "llm_browser_prompt",
+        provider: "chatgpt",
+        adapter: "browser",
+        target_url: "https://example.com/",
+        prompt: "Say only OK",
+        allowed_domains: ["chatgpt.com"]
+      }),
+      uploadArtifact: async (payload) => {
+        assert.equal(payload.artifact_type, "log");
+        assert.equal(payload.task_id, "task_bad_domain");
+        assert.ok(payload.size_bytes > 0);
+        return { artifact: { artifact_id: "artifact_log_1" } };
+      },
+      failTask: async (payload) => {
+        assert.equal(payload.error_code, "DOMAIN_NOT_ALLOWED");
+        assert.equal(payload.artifacts[0].artifact_id, "artifact_log_1");
+        return {};
+      },
+      submitTaskResult: async () => ({})
+    };
+
+    await new RunnerLoop(config, brain, {}).runOnce();
+
+    assert.equal(new LocalSpool(config.runner.local_spool_path).due().length, 0);
+  });
 });
 
 function testConfig() {

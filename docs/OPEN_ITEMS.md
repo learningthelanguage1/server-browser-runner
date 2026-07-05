@@ -10,3 +10,4 @@
 - 2026-07-05 resolved: Login mode now exits after the provider composer is visible and writes `.ff-session.json` in the provider profile.
 - 2026-07-05 resolved: Runner workspace metadata now declares the root package so server-side `pnpm install` can run from the deployed checkout.
 - 2026-07-05 resolved: Runner now registers local artifact metadata with Brain before submitting spooled results.
+- 2026-07-05 resolved: Runner now writes and uploads a diagnostic log artifact for failed tasks.

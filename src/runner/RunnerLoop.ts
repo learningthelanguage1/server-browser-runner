@@ -4,6 +4,7 @@ import type { ProviderAdapter } from "../providers/ProviderAdapter.js";
 import type { AgentTask, AgentTaskResult, ArtifactRef, FailureCode, ProviderName, RunnerConfig } from "../types.js";
 import { assertAllowedDomain } from "../security/DomainAllowlist.js";
 import { assertProviderPermission } from "../security/PermissionGate.js";
+import { ArtifactManager } from "./ArtifactManager.js";
 import { LocalSpool } from "./LocalSpool.js";
 import { RateLimitGate } from "./RateLimitGate.js";
 import { TaskLock } from "./TaskLock.js";
@@ -12,6 +13,7 @@ export class RunnerLoop {
   private readonly lock = new TaskLock();
   private readonly rateGate = new RateLimitGate();
   private readonly spool: LocalSpool;
+  private readonly artifactManager: ArtifactManager;
 
   constructor(
     private readonly config: RunnerConfig,
@@ -19,6 +21,7 @@ export class RunnerLoop {
     private readonly adapters: Record<ProviderName, ProviderAdapter>
   ) {
     this.spool = new LocalSpool(config.runner.local_spool_path);
+    this.artifactManager = new ArtifactManager(config);
   }
 
   async start(): Promise<void> {
@@ -73,7 +76,24 @@ export class RunnerLoop {
       this.rateGate.record(task.provider);
       return result;
     } catch (error) {
-      return failedResult(this.config.runner.id, task, error);
+      const result = failedResult(this.config.runner.id, task, error);
+      result.artifacts = [
+        await this.artifactManager.writeLog(
+          task.task_id,
+          JSON.stringify(
+            {
+              task_id: task.task_id,
+              provider: task.provider,
+              target_host: safeHost(task.target_url),
+              error_code: result.error_code,
+              error_message: result.error_message
+            },
+            null,
+            2
+          )
+        )
+      ];
+      return result;
     }
   }
 
@@ -122,6 +142,14 @@ function failedResult(runnerId: string, task: AgentTask, error: unknown): AgentT
     error_message: message,
     retryable: ["PROVIDER_RATE_LIMITED", "PROVIDER_COOLDOWN", "RESPONSE_TIMEOUT", "BRAIN_SUBMIT_FAILED"].includes(code)
   };
+}
+
+function safeHost(url: string): string | undefined {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return undefined;
+  }
 }
 
 const errorCodes = new Set<FailureCode>([
