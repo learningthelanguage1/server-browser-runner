@@ -46,6 +46,7 @@ export class ChatGptWebAdapter implements ProviderAdapter {
       const health = await chatgptHealth(page);
       if (health === "login_required") throw new Error("LOGIN_REQUIRED");
       if (health === "rate_limited") throw new Error("PROVIDER_RATE_LIMITED");
+      if (health === "human_check_required") throw new Error("CAPTCHA_OR_HUMAN_CHECK");
       if (health !== "ready") throw new Error("SELECTOR_CHANGED");
       await page.locator(chatgptSelectors.composer).first().click();
       await page.evaluate((prompt) => navigator.clipboard.writeText(prompt), task.prompt);

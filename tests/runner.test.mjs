@@ -10,6 +10,8 @@ import { LocalSpool } from "../dist/runner/LocalSpool.js";
 import { RunnerLoop } from "../dist/runner/RunnerLoop.js";
 import { browserFailedResult } from "../dist/providers/browserFailureResult.js";
 import { captureLastAnswer } from "../dist/browser/CaptureEngine.js";
+import { chatgptHealth } from "../dist/providers/chatgpt/chatgptHealth.js";
+import { claudeHealth } from "../dist/providers/claude/claudeHealth.js";
 import { envFromFile, preflight, preflightWithEnvFile } from "../dist/cli/preflight.js";
 
 describe("runner MVP guards", () => {
@@ -155,6 +157,17 @@ describe("runner MVP guards", () => {
     };
 
     await assert.rejects(() => captureLastAnswer(page, answer), /RESPONSE_EMPTY/);
+  });
+
+  it("reports provider human checks explicitly", async () => {
+    const page = {
+      locator: (selector) => ({
+        count: async () => (selector.includes("captcha") || selector.includes("human") ? 1 : 0)
+      })
+    };
+
+    assert.equal(await chatgptHealth(page), "human_check_required");
+    assert.equal(await claudeHealth(page), "human_check_required");
   });
 
   it("does not claim a second task while one is active", async () => {
