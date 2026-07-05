@@ -1,6 +1,7 @@
 import type { BrainClient } from "../brain/BrainClient.js";
+import { stat } from "node:fs/promises";
 import type { ProviderAdapter } from "../providers/ProviderAdapter.js";
-import type { AgentTask, AgentTaskResult, FailureCode, ProviderName, RunnerConfig } from "../types.js";
+import type { AgentTask, AgentTaskResult, ArtifactRef, FailureCode, ProviderName, RunnerConfig } from "../types.js";
 import { assertAllowedDomain } from "../security/DomainAllowlist.js";
 import { assertProviderPermission } from "../security/PermissionGate.js";
 import { LocalSpool } from "./LocalSpool.js";
@@ -40,8 +41,10 @@ export class RunnerLoop {
   async flushSpool(): Promise<void> {
     for (const row of this.spool.due()) {
       try {
-        if (row.payload.status === "failed") await this.brain.failTask(row.payload);
-        else await this.brain.submitTaskResult(row.payload);
+        const payload = await this.uploadArtifacts(row.payload);
+        this.spool.save(payload);
+        if (payload.status === "failed") await this.brain.failTask(payload);
+        else await this.brain.submitTaskResult(payload);
         this.spool.delete(row.id);
       } catch {
         this.spool.markRetry(row.id);
@@ -73,6 +76,37 @@ export class RunnerLoop {
       return failedResult(this.config.runner.id, task, error);
     }
   }
+
+  private async uploadArtifacts(result: AgentTaskResult): Promise<AgentTaskResult> {
+    const artifacts = [];
+    for (const artifact of result.artifacts ?? []) {
+      artifacts.push(await this.uploadArtifact(result, artifact));
+    }
+    return artifacts.length ? { ...result, artifacts } : result;
+  }
+
+  private async uploadArtifact(result: AgentTaskResult, artifact: ArtifactRef): Promise<ArtifactRef> {
+    if (artifact.artifact_id || !artifact.path) return artifact;
+    const size = await stat(artifact.path).then((file) => file.size, () => undefined);
+    const response = await this.brain.uploadArtifact({
+      task_id: result.task_id,
+      attempt_id: result.attempt_id,
+      runner_id: result.runner_id,
+      artifact_type: artifact.type,
+      storage_path: artifact.path,
+      mime_type: mimeType(artifact.type),
+      size_bytes: size,
+      redaction_status: "not_redacted"
+    });
+    const uploaded = response.artifact as { artifact_id?: string } | undefined;
+    return uploaded?.artifact_id ? { ...artifact, artifact_id: uploaded.artifact_id } : artifact;
+  }
+}
+
+function mimeType(type: ArtifactRef["type"]): string {
+  if (type === "screenshot") return "image/png";
+  if (type === "html_excerpt") return "text/html";
+  return "text/plain";
 }
 
 function failedResult(runnerId: string, task: AgentTask, error: unknown): AgentTaskResult {

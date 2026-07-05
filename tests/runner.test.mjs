@@ -1,4 +1,4 @@
-import { mkdtempSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { tmpdir } from "node:os";
@@ -7,6 +7,7 @@ import { FakeEchoAdapter } from "../dist/providers/fakeEcho/FakeEchoAdapter.js";
 import { assertAllowedDomain } from "../dist/security/DomainAllowlist.js";
 import { assertProviderPermission } from "../dist/security/PermissionGate.js";
 import { LocalSpool } from "../dist/runner/LocalSpool.js";
+import { RunnerLoop } from "../dist/runner/RunnerLoop.js";
 
 describe("runner MVP guards", () => {
   it("fake echo returns expected output and marker", async () => {
@@ -50,6 +51,37 @@ describe("runner MVP guards", () => {
     assert.equal(spool.due().length, 1);
     spool.delete(id);
     assert.equal(spool.due().length, 0);
+  });
+
+  it("uploads local artifact metadata before submitting a spooled result", async () => {
+    const config = testConfig();
+    const screenshot = join(config.browser.artifacts_dir, "final.png");
+    mkdirSync(config.browser.artifacts_dir, { recursive: true });
+    writeFileSync(screenshot, "png");
+    new LocalSpool(config.runner.local_spool_path).save({
+      task_id: "task_1",
+      runner_id: "runner_1",
+      attempt_id: "attempt_1",
+      status: "succeeded",
+      result_text: "OK",
+      artifacts: [{ type: "screenshot", path: screenshot }]
+    });
+    const brain = {
+      uploadArtifact: async (payload) => {
+        assert.equal(payload.artifact_type, "screenshot");
+        assert.equal(payload.size_bytes, 3);
+        return { artifact: { artifact_id: "artifact_1" } };
+      },
+      submitTaskResult: async (payload) => {
+        assert.equal(payload.artifacts[0].artifact_id, "artifact_1");
+        return {};
+      },
+      failTask: async () => ({})
+    };
+
+    await new RunnerLoop(config, brain, {}).flushSpool();
+
+    assert.equal(new LocalSpool(config.runner.local_spool_path).due().length, 0);
   });
 });
 
