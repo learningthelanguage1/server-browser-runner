@@ -5,6 +5,7 @@ const configPath = valueAfter("--config") ?? "config/runner.example.yaml";
 const config = await loadConfig(configPath);
 const taskId = `internal_smoke_${Date.now()}`;
 const marker = `[[FF_DONE:${taskId}]]`;
+const expectedText = "INTERNAL_BROWSER_RUNNER_OK";
 
 const result = await new InternalWebAdapter(config).execute({
   task_id: taskId,
@@ -12,9 +13,9 @@ const result = await new InternalWebAdapter(config).execute({
   provider: "internal",
   adapter: "browser",
   target_url: config.providers.internal.target_url,
-  prompt: `Say only: ELAINE_PROMPT_CHAIN_OK\n\nAt the end, print:\n${marker}`,
+  prompt: `Say only: ${expectedText}\n\nAt the end, print:\n${marker}`,
   expected_output: {
-    must_include: "ELAINE_PROMPT_CHAIN_OK",
+    must_include: expectedText,
     done_marker: marker
   },
   timeout_seconds: 60,
@@ -37,7 +38,7 @@ console.log(
   )
 );
 
-if (result.status !== "succeeded" || result.clean_result_text !== "ELAINE_PROMPT_CHAIN_OK") {
+if (result.status !== "succeeded" || result.clean_result_text !== expectedText) {
   process.exitCode = 1;
 }
 

@@ -29,6 +29,9 @@ need provider credentials or Brain queue secrets.
 
 - `pnpm build` passed locally.
 - `pnpm test` passed locally with 8 tests.
+- First server smoke proved send/capture/screenshot but exposed the owned page
+  returns `INTERNAL_BROWSER_RUNNER_OK`; the smoke expectation now matches that
+  internal-page contract.
 
 ## Notion
 
