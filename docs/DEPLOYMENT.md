@@ -27,11 +27,12 @@ sudo cp config/runner.example.yaml /srv/ff-browser-runner/config/runner.yaml
 scripts/install-systemd.sh
 ```
 
-Create `/srv/ff-browser-runner/config/runner.env` only after the shared Brain
-runner secret has been approved and installed:
+Create `/srv/ff-browser-runner/config/runner.env` from the committed safe
+template only after the shared Brain runner secret has been approved and
+installed:
 
 ```bash
-sudo install -o ffrunner -g ffrunner -m 600 /dev/null /srv/ff-browser-runner/config/runner.env
+sudo install -o ffrunner -g ffrunner -m 600 config/runner.env.example /srv/ff-browser-runner/config/runner.env
 sudoedit /srv/ff-browser-runner/config/runner.env
 ```
 
@@ -41,7 +42,15 @@ Expected content:
 FF_RUNNER_SECRET=replace-with-approved-shared-secret
 ```
 
+The value must match Brain's `FUNFLUEN_AGENT_RUNNER_SECRET`. Do not generate
+or install either secret until the shared runner secret is explicitly approved.
 Do not commit this file. The systemd unit reads it with `EnvironmentFile`.
+
+Before starting the main runner service, run preflight with the same env file:
+
+```bash
+DISPLAY=:99 pnpm preflight -- --config /srv/ff-browser-runner/config/runner.yaml --env-file /srv/ff-browser-runner/config/runner.env
+```
 
 Run:
 

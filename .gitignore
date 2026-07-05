@@ -7,3 +7,4 @@ package-lock.json
 *.sqlite-shm
 *.sqlite-wal
 .env
+config/runner.env
