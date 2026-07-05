@@ -8,6 +8,7 @@ Server layout:
 /srv/ff-browser-runner/
   app/
   config/runner.yaml
+  config/runner.env
   profiles/
   spool/runner.sqlite
   artifacts/
@@ -25,6 +26,22 @@ sudo rsync -a --delete ./ /srv/ff-browser-runner/app/
 sudo cp config/runner.example.yaml /srv/ff-browser-runner/config/runner.yaml
 scripts/install-systemd.sh
 ```
+
+Create `/srv/ff-browser-runner/config/runner.env` only after the shared Brain
+runner secret has been approved and installed:
+
+```bash
+sudo install -o ffrunner -g ffrunner -m 600 /dev/null /srv/ff-browser-runner/config/runner.env
+sudoedit /srv/ff-browser-runner/config/runner.env
+```
+
+Expected content:
+
+```txt
+FF_RUNNER_SECRET=replace-with-approved-shared-secret
+```
+
+Do not commit this file. The systemd unit reads it with `EnvironmentFile`.
 
 Run:
 

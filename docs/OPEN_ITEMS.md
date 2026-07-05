@@ -6,3 +6,5 @@
 - 2026-07-05: Claude must stay disabled until a Claude approval record exists.
 - 2026-07-05: Provider selectors are MVP selectors and should be hardened after first live screenshots from the real profiles.
 - 2026-07-05: Runner secret must be configured on both Brain and the runner service before live runner registration can work.
+- 2026-07-05 resolved: Runner service now reads `/srv/ff-browser-runner/config/runner.env` instead of carrying a placeholder secret in the unit file.
+- 2026-07-05 resolved: Login mode now exits after the provider composer is visible and writes `.ff-session.json` in the provider profile.
