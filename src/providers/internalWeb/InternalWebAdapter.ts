@@ -14,9 +14,11 @@ export class InternalWebAdapter implements ProviderAdapter {
   constructor(private readonly config: RunnerConfig) {}
 
   async selfCheck() {
-    const context = await new BrowserProfileManager(this.config).open(this.config.providers.internal);
-    const page = await context.newPage();
+    let context;
+    let page;
     try {
+      context = await new BrowserProfileManager(this.config).open(this.config.providers.internal);
+      page = await context.newPage();
       await page.goto(this.config.providers.internal.target_url, { waitUntil: "domcontentloaded" });
       const composer = page.locator("textarea, [contenteditable='true']").first();
       const sendButton = page.locator("button:has-text('Send'), button[type='submit']").first();
@@ -25,9 +27,9 @@ export class InternalWebAdapter implements ProviderAdapter {
       }
       return { provider: this.provider, status: "ready" as const, currentUrl: page.url() };
     } catch (error) {
-      return { provider: this.provider, status: "unknown_error" as const, currentUrl: page.url(), details: String(error) };
+      return { provider: this.provider, status: "unknown_error" as const, currentUrl: page?.url(), details: String(error) };
     } finally {
-      await context.close();
+      await context?.close();
     }
   }
 

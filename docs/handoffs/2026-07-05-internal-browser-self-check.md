@@ -28,6 +28,9 @@ for the owned test page.
 
 - `pnpm build` passed locally.
 - `pnpm test` passed locally with 8 tests.
+- First server self-check exposed missing `DISPLAY`/browser-startup failure as an
+  uncaught exception; the adapter now returns `unknown_error` instead of
+  crashing when the browser cannot start.
 
 ## Notion
 
