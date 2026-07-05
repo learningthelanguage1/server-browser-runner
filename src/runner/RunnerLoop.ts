@@ -44,7 +44,7 @@ export class RunnerLoop {
   async flushSpool(): Promise<void> {
     for (const row of this.spool.due()) {
       try {
-        const payload = await this.uploadArtifacts(row.payload);
+        const payload = withSubmittedAt(await this.uploadArtifacts(row.payload));
         this.spool.save(payload);
         if (payload.status === "failed") await this.brain.failTask(payload);
         else await this.brain.submitTaskResult(payload);
@@ -173,4 +173,8 @@ const errorCodes = new Set<FailureCode>([
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function withSubmittedAt(result: AgentTaskResult): AgentTaskResult {
+  return { ...result, timings: { ...(result.timings ?? {}), submitted_at: new Date().toISOString() } };
 }

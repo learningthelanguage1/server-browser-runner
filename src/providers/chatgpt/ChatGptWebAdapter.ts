@@ -41,6 +41,7 @@ export class ChatGptWebAdapter implements ProviderAdapter {
     const context = await new BrowserProfileManager(this.config).open(this.config.providers.chatgpt);
     const page = await context.newPage();
     const artifacts = [];
+    const timings: Record<string, string> = { claimed_at: new Date().toISOString() };
     try {
       await page.goto(task.target_url, { waitUntil: "domcontentloaded" });
       const health = await chatgptHealth(page);
@@ -52,9 +53,11 @@ export class ChatGptWebAdapter implements ProviderAdapter {
       await page.evaluate((prompt) => navigator.clipboard.writeText(prompt), task.prompt);
       await page.keyboard.press(process.platform === "darwin" ? "Meta+V" : "Control+V");
       await page.locator(chatgptSelectors.sendButton).first().click();
+      timings.prompt_sent_at = new Date().toISOString();
       const answer = page.locator(chatgptSelectors.assistantResponse).last();
       const done = await waitForDoneMarkerOrStable(answer, task.expected_output?.done_marker, (task.timeout_seconds ?? 900) * 1000);
       if (done.status === "timeout") throw new Error("RESPONSE_TIMEOUT");
+      timings.response_completed_at = new Date().toISOString();
       const captured = await captureLastAnswer(page, answer);
       const screenshot = await new ScreenshotService(this.config).capture(page, task.task_id);
       artifacts.push(screenshot);
@@ -66,6 +69,7 @@ export class ChatGptWebAdapter implements ProviderAdapter {
         result_text: captured.text,
         clean_result_text: cleanMarker(captured.text, task.expected_output?.done_marker),
         capture_method: captured.method,
+        timings,
         validation_status: done.status === "marker" ? "passed" : "marker_missing",
         provider_receipt: { provider: this.provider, adapter_version: "0.1.0", url_host: new URL(page.url()).hostname },
         artifacts

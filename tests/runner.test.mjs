@@ -32,6 +32,9 @@ describe("runner MVP guards", () => {
     assert.equal(result.status, "succeeded");
     assert.equal(result.clean_result_text, "ELAINE_PROMPT_CHAIN_OK");
     assert.match(result.result_text ?? "", /\[\[FF_DONE:task_1\]\]/);
+    assert.ok(result.timings.claimed_at);
+    assert.ok(result.timings.prompt_sent_at);
+    assert.ok(result.timings.response_completed_at);
   });
 
   it("rejects domains outside the task allowlist", () => {
@@ -79,6 +82,7 @@ describe("runner MVP guards", () => {
       },
       submitTaskResult: async (payload) => {
         assert.equal(payload.artifacts[0].artifact_id, "artifact_1");
+        assert.ok(payload.timings.submitted_at);
         return {};
       },
       failTask: async () => ({})
