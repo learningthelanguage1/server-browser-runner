@@ -165,6 +165,7 @@ describe("runner MVP guards", () => {
 
   it("reports provider human checks explicitly", async () => {
     const page = {
+      url: () => "https://claude.ai/chats",
       locator: (selector) => ({
         count: async () => (selector.includes("captcha") || selector.includes("human") ? 1 : 0)
       })
@@ -176,6 +177,7 @@ describe("runner MVP guards", () => {
 
   it("requires send controls before provider health is ready", async () => {
     const page = {
+      url: () => "https://claude.ai/chats",
       locator: (selector) => ({
         count: async () => (selector.includes("textarea") || selector.includes("contenteditable") ? 1 : 0)
       })
@@ -183,6 +185,16 @@ describe("runner MVP guards", () => {
 
     assert.equal(await chatgptHealth(page), "selector_broken");
     assert.equal(await claudeHealth(page), "selector_broken");
+  });
+
+  it("reports login pages as login required", async () => {
+    const page = {
+      url: () => "https://claude.ai/login",
+      locator: () => ({ count: async () => 0 })
+    };
+
+    assert.equal(await chatgptHealth(page), "login_required");
+    assert.equal(await claudeHealth(page), "login_required");
   });
 
   it("does not claim a second task while one is active", async () => {

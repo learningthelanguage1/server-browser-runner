@@ -2,6 +2,7 @@ import type { Page } from "playwright";
 import { claudeSelectors } from "./claudeSelectors.js";
 
 export async function claudeHealth(page: Page) {
+  if (new URL(page.url()).pathname.toLowerCase().includes("login")) return "login_required" as const;
   if ((await page.locator(claudeSelectors.humanCheck).count()) > 0) return "human_check_required" as const;
   if ((await page.locator(claudeSelectors.rateLimit).count()) > 0) return "rate_limited" as const;
   if ((await page.locator(claudeSelectors.login).count()) > 0) return "login_required" as const;

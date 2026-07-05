@@ -25,3 +25,4 @@
 - 2026-07-05 resolved: ChatGPT and Claude self-checks now require both composer and send controls before reporting ready.
 - 2026-07-05 resolved: Runner results now include adapter execution timings and a runner-side `submitted_at` timestamp.
 - 2026-07-05 resolved: Claude approval is confirmed and Claude is enabled in the runner config with `claude_permission_2026_07`.
+- 2026-07-05 resolved: Provider login pages now report `LOGIN_REQUIRED` instead of selector breakage.
