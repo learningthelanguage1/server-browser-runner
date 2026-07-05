@@ -17,3 +17,4 @@
 - 2026-07-05 resolved: Internal browser self-check now opens the owned test page and verifies the composer/send controls before reporting ready.
 - 2026-07-05 resolved: Internal browser adapter now has a repeatable smoke proof command for send, capture, marker cleanup, and screenshot artifact creation.
 - 2026-07-05 resolved: ChatGPT and Claude self-checks now return provider health instead of crashing when browser startup fails.
+- 2026-07-05 resolved: Runner now has a preflight command that reports missing service blockers such as the runner secret and display before startup.

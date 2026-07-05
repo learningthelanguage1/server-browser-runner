@@ -9,6 +9,7 @@ import { assertProviderPermission } from "../dist/security/PermissionGate.js";
 import { LocalSpool } from "../dist/runner/LocalSpool.js";
 import { RunnerLoop } from "../dist/runner/RunnerLoop.js";
 import { browserFailedResult } from "../dist/providers/browserFailureResult.js";
+import { preflight } from "../dist/cli/preflight.js";
 
 describe("runner MVP guards", () => {
   it("fake echo returns expected output and marker", async () => {
@@ -185,6 +186,15 @@ describe("runner MVP guards", () => {
     await firstRun;
 
     assert.equal(claimCount, 1);
+  });
+
+  it("reports missing service preflight blockers", async () => {
+    const config = testConfig();
+    config.browser.headless = false;
+    const result = await preflight(config, {});
+    assert.equal(result.ok, false);
+    assert.equal(result.checks.find((check) => check.name === "runner_secret").status, "fail");
+    assert.equal(result.checks.find((check) => check.name === "display").status, "fail");
   });
 });
 

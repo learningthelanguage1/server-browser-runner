@@ -5,6 +5,7 @@ import { RunnerLoop } from "./runner/RunnerLoop.js";
 import { loginProvider } from "./cli/loginProvider.js";
 import { selfCheck } from "./cli/selfCheck.js";
 import { runOnce } from "./cli/runOnce.js";
+import { preflight } from "./cli/preflight.js";
 import type { ProviderName } from "./types.js";
 
 const args = process.argv.slice(2);
@@ -17,6 +18,10 @@ if (args[0] === "login") {
   console.log(JSON.stringify(await selfCheck(config, providerArg()), null, 2));
 } else if (args[0] === "run-once") {
   await runOnce(config);
+} else if (args[0] === "preflight") {
+  const result = await preflight(config);
+  console.log(JSON.stringify(result, null, 2));
+  if (!result.ok) process.exitCode = 1;
 } else {
   const brain = new BrainClient(config);
   await new RunnerLoop(config, brain, createAdapters(config)).start();
