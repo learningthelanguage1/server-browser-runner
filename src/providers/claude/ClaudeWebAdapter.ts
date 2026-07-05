@@ -22,13 +22,17 @@ export class ClaudeWebAdapter implements ProviderAdapter {
     } catch (error) {
       return { provider: this.provider, status: "permission_blocked" as const, details: String(error) };
     }
-    const context = await new BrowserProfileManager(this.config).open(this.config.providers.claude);
-    const page = await context.newPage();
+    let context;
+    let page;
     try {
+      context = await new BrowserProfileManager(this.config).open(this.config.providers.claude);
+      page = await context.newPage();
       await page.goto(this.config.providers.claude.target_url, { waitUntil: "domcontentloaded" });
       return { provider: this.provider, status: await claudeHealth(page), currentUrl: page.url() };
+    } catch (error) {
+      return { provider: this.provider, status: "unknown_error" as const, currentUrl: page?.url(), details: String(error) };
     } finally {
-      await context.close();
+      await context?.close();
     }
   }
 

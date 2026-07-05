@@ -22,13 +22,17 @@ export class ChatGptWebAdapter implements ProviderAdapter {
     } catch (error) {
       return { provider: this.provider, status: "permission_blocked" as const, details: String(error) };
     }
-    const context = await new BrowserProfileManager(this.config).open(this.config.providers.chatgpt);
-    const page = await context.newPage();
+    let context;
+    let page;
     try {
+      context = await new BrowserProfileManager(this.config).open(this.config.providers.chatgpt);
+      page = await context.newPage();
       await page.goto(this.config.providers.chatgpt.target_url, { waitUntil: "domcontentloaded" });
       return { provider: this.provider, status: await chatgptHealth(page), currentUrl: page.url() };
+    } catch (error) {
+      return { provider: this.provider, status: "unknown_error" as const, currentUrl: page?.url(), details: String(error) };
     } finally {
-      await context.close();
+      await context?.close();
     }
   }
 
