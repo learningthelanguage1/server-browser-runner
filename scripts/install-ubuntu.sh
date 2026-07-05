@@ -2,7 +2,7 @@
 set -euo pipefail
 
 sudo apt-get update
-sudo apt-get install -y nodejs npm xvfb fluxbox x11vnc
+sudo apt-get install -y nodejs npm xvfb fluxbox x11vnc sqlite3
 sudo corepack enable
 sudo useradd --system --create-home --shell /bin/bash ffrunner || true
 sudo mkdir -p /srv/ff-browser-runner/{app,config,profiles,spool,artifacts,approval,logs}

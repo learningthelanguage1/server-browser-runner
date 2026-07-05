@@ -9,7 +9,7 @@ WorkingDirectory=/srv/ff-browser-runner/app
 Environment=NODE_ENV=production
 Environment=DISPLAY=:99
 Environment=FF_RUNNER_SECRET=replace-with-env-or-secret-file
-ExecStart=/usr/bin/node dist/index.js
+ExecStart=/usr/bin/node dist/index.js --config /srv/ff-browser-runner/config/runner.yaml
 Restart=always
 RestartSec=10
 

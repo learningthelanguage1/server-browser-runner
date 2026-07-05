@@ -27,8 +27,9 @@ manual login, and provider approval state.
 
 ## What Remains
 
-- Add or map the Brain server queue endpoints.
-- Publish the internal runner test page.
+- Brain server queue endpoints and the internal runner test page are now deployed
+  live in FunFluen OS at commit `c85b4f70288a93b3273ea22d7da33e14edad71ff`.
+- Configure the matching runner secret on Brain and the runner service.
 - Log in to the ChatGPT profile on the Linux server over localhost-only VNC.
 - Keep Claude disabled until approval exists.
 - Harden provider selectors after the first live screenshots.
