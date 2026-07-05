@@ -36,6 +36,16 @@ export async function preflight(config: RunnerConfig, env: NodeJS.ProcessEnv = p
   return { ok: checks.every((item) => item.status !== "fail"), checks };
 }
 
+export async function preflightWithEnvFile(config: RunnerConfig, path: string) {
+  return envFromFile(path).then(
+    (env) => preflight(config, env),
+    (error) => ({
+      ok: false,
+      checks: [{ name: "env_file", status: "fail" as const, details: String(error) }]
+    })
+  );
+}
+
 export async function envFromFile(path: string, base: NodeJS.ProcessEnv = process.env) {
   const env = { ...base };
   const raw = await readFile(path, "utf8");

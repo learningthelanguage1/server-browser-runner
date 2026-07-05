@@ -5,7 +5,7 @@ import { RunnerLoop } from "./runner/RunnerLoop.js";
 import { loginProvider } from "./cli/loginProvider.js";
 import { selfCheck } from "./cli/selfCheck.js";
 import { runOnce } from "./cli/runOnce.js";
-import { envFromFile, preflight } from "./cli/preflight.js";
+import { preflight, preflightWithEnvFile } from "./cli/preflight.js";
 import type { ProviderName } from "./types.js";
 
 const args = process.argv.slice(2);
@@ -20,7 +20,7 @@ if (args[0] === "login") {
   await runOnce(config);
 } else if (args[0] === "preflight") {
   const envFile = valueAfter("--env-file");
-  const result = await preflight(config, envFile ? await envFromFile(envFile) : process.env);
+  const result = envFile ? await preflightWithEnvFile(config, envFile) : await preflight(config);
   console.log(JSON.stringify(result, null, 2));
   if (!result.ok) process.exitCode = 1;
 } else {

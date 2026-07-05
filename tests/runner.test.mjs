@@ -9,7 +9,7 @@ import { assertProviderPermission } from "../dist/security/PermissionGate.js";
 import { LocalSpool } from "../dist/runner/LocalSpool.js";
 import { RunnerLoop } from "../dist/runner/RunnerLoop.js";
 import { browserFailedResult } from "../dist/providers/browserFailureResult.js";
-import { envFromFile, preflight } from "../dist/cli/preflight.js";
+import { envFromFile, preflight, preflightWithEnvFile } from "../dist/cli/preflight.js";
 
 describe("runner MVP guards", () => {
   it("fake echo returns expected output and marker", async () => {
@@ -204,6 +204,13 @@ describe("runner MVP guards", () => {
     const env = await envFromFile(envPath, {});
     assert.equal(env.FF_RUNNER_SECRET, "test-secret");
     assert.equal(env.DISPLAY, ":99");
+  });
+
+  it("reports missing preflight env files", async () => {
+    const result = await preflightWithEnvFile(testConfig(), join(tmpdir(), "missing-runner.env"));
+    assert.equal(result.ok, false);
+    assert.equal(result.checks[0].name, "env_file");
+    assert.equal(result.checks[0].status, "fail");
   });
 });
 

@@ -26,7 +26,9 @@ starting the main runner service.
 ## Verification
 
 - `pnpm build` passed locally.
-- `pnpm test` passed locally with 10 tests.
+- `pnpm test` passed locally with 11 tests.
+- First server `--env-file` run exposed missing env-file handling; preflight now
+  reports a JSON `env_file` failure instead of crashing when the file is absent.
 
 ## Notion
 
