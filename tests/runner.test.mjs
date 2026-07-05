@@ -9,6 +9,7 @@ import { assertProviderPermission } from "../dist/security/PermissionGate.js";
 import { LocalSpool } from "../dist/runner/LocalSpool.js";
 import { RunnerLoop } from "../dist/runner/RunnerLoop.js";
 import { browserFailedResult } from "../dist/providers/browserFailureResult.js";
+import { captureLastAnswer } from "../dist/browser/CaptureEngine.js";
 import { envFromFile, preflight, preflightWithEnvFile } from "../dist/cli/preflight.js";
 
 describe("runner MVP guards", () => {
@@ -139,6 +140,21 @@ describe("runner MVP guards", () => {
     assert.equal(result.retryable, false);
     assert.equal(result.provider_receipt.url_host, "chatgpt.com");
     assert.equal(result.artifacts[0].type, "screenshot");
+  });
+
+  it("fails empty answer capture instead of reporting success", async () => {
+    const page = {
+      locator: () => ({
+        last: () => ({
+          count: async () => 0
+        })
+      })
+    };
+    const answer = {
+      textContent: async () => ""
+    };
+
+    await assert.rejects(() => captureLastAnswer(page, answer), /RESPONSE_EMPTY/);
   });
 
   it("does not claim a second task while one is active", async () => {

@@ -20,3 +20,4 @@
 - 2026-07-05 resolved: ChatGPT and Claude self-checks now return provider health instead of crashing when browser startup fails.
 - 2026-07-05 resolved: Runner now has a preflight command that reports missing service blockers such as the runner secret and display before startup.
 - 2026-07-05 resolved: Runner preflight can now read the same env file used by systemd without starting the service.
+- 2026-07-05 resolved: Empty answer capture now fails with `RESPONSE_EMPTY` instead of reporting a false success.

@@ -12,5 +12,5 @@ export async function captureLastAnswer(page: Page, answer: Locator) {
   }
   const text = ((await answer.textContent().catch(() => "")) ?? "").trim();
   if (text) return { method: "dom" as const, text };
-  return { method: "accessibility" as const, text: "" };
+  throw new Error("RESPONSE_EMPTY");
 }
