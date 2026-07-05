@@ -139,6 +139,53 @@ describe("runner MVP guards", () => {
     assert.equal(result.provider_receipt.url_host, "chatgpt.com");
     assert.equal(result.artifacts[0].type, "screenshot");
   });
+
+  it("does not claim a second task while one is active", async () => {
+    const config = testConfig();
+    let claimCount = 0;
+    let finishTask;
+    const brain = {
+      claimNextTask: async () => {
+        claimCount += 1;
+        return {
+          task_id: `task_${claimCount}`,
+          job_type: "llm_browser_prompt",
+          provider: "fake_echo",
+          adapter: "browser",
+          target_url: "https://automation.funfluen.com/runner-test-chat",
+          prompt: "Say only OK"
+        };
+      },
+      uploadArtifact: async () => ({}),
+      submitTaskResult: async () => ({}),
+      failTask: async () => ({})
+    };
+    const adapters = {
+      fake_echo: {
+        execute: async (task) => {
+          await new Promise((resolve) => {
+            finishTask = resolve;
+          });
+          return {
+            task_id: task.task_id,
+            runner_id: config.runner.id,
+            attempt_id: "attempt_1",
+            status: "succeeded",
+            result_text: "OK"
+          };
+        }
+      }
+    };
+
+    const loop = new RunnerLoop(config, brain, adapters);
+    const firstRun = loop.runOnce();
+    await new Promise((resolve) => setImmediate(resolve));
+    await loop.runOnce();
+    finishTask();
+    await firstRun;
+
+    assert.equal(claimCount, 1);
+  });
 });
 
 function testConfig() {

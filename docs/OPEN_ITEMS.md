@@ -13,3 +13,4 @@
 - 2026-07-05 resolved: Runner now writes and uploads a diagnostic log artifact for failed tasks.
 - 2026-07-05 resolved: Browser adapters now keep failure screenshots when provider-page execution fails before the page closes.
 - 2026-07-05 resolved: Runner test script now works through the repo-pinned package manager without requiring a global `pnpm` shim inside lifecycle scripts.
+- 2026-07-05 resolved: Runner active-task locking now has regression proof that a second claim is skipped while a task is still running.
