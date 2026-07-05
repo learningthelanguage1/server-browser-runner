@@ -9,7 +9,7 @@ import { assertProviderPermission } from "../dist/security/PermissionGate.js";
 import { LocalSpool } from "../dist/runner/LocalSpool.js";
 import { RunnerLoop } from "../dist/runner/RunnerLoop.js";
 import { browserFailedResult } from "../dist/providers/browserFailureResult.js";
-import { preflight } from "../dist/cli/preflight.js";
+import { envFromFile, preflight } from "../dist/cli/preflight.js";
 
 describe("runner MVP guards", () => {
   it("fake echo returns expected output and marker", async () => {
@@ -195,6 +195,15 @@ describe("runner MVP guards", () => {
     assert.equal(result.ok, false);
     assert.equal(result.checks.find((check) => check.name === "runner_secret").status, "fail");
     assert.equal(result.checks.find((check) => check.name === "display").status, "fail");
+  });
+
+  it("can read service preflight env files", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "ff-runner-"));
+    const envPath = join(dir, "runner.env");
+    writeFileSync(envPath, "FF_RUNNER_SECRET=test-secret\nDISPLAY=:99\n");
+    const env = await envFromFile(envPath, {});
+    assert.equal(env.FF_RUNNER_SECRET, "test-secret");
+    assert.equal(env.DISPLAY, ":99");
   });
 });
 

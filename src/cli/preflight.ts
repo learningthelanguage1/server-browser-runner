@@ -1,4 +1,4 @@
-import { access } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import type { RunnerConfig } from "../types.js";
 
@@ -34,6 +34,19 @@ export async function preflight(config: RunnerConfig, env: NodeJS.ProcessEnv = p
   }
 
   return { ok: checks.every((item) => item.status !== "fail"), checks };
+}
+
+export async function envFromFile(path: string, base: NodeJS.ProcessEnv = process.env) {
+  const env = { ...base };
+  const raw = await readFile(path, "utf8");
+  for (const line of raw.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const index = trimmed.indexOf("=");
+    if (index === -1) continue;
+    env[trimmed.slice(0, index).trim()] = trimmed.slice(index + 1).trim().replace(/^["']|["']$/g, "");
+  }
+  return env;
 }
 
 async function exists(path: string) {
