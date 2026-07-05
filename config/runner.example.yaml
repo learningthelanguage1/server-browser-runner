@@ -73,10 +73,10 @@ providers:
     timeout_seconds: 900
 
   claude:
-    enabled: false
+    enabled: true
     permission_required: true
-    permission_status: not_approved
-    permission_ref: null
+    permission_status: approved
+    permission_ref: claude_permission_2026_07
     adapter: browser
     target_url: https://claude.ai/
     allowed_domains:

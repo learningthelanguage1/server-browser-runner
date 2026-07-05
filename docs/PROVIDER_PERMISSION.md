@@ -13,14 +13,14 @@ providers:
     permission_ref: openai_permission_2026_07
 ```
 
-Claude is implemented but disabled by default:
+Claude is enabled because approval is now confirmed:
 
 ```yaml
 providers:
   claude:
-    enabled: false
-    permission_status: not_approved
+    enabled: true
+    permission_status: approved
+    permission_ref: claude_permission_2026_07
 ```
 
-Add the approval record under `/srv/ff-browser-runner/approval/` before enabling
-a provider that requires permission.
+Keep the approval record under `/srv/ff-browser-runner/approval/`.
