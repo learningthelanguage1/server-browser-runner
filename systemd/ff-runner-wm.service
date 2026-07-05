@@ -1,0 +1,13 @@
+[Unit]
+Description=FunFluen Browser Runner Window Manager
+After=ff-runner-xvfb.service
+Requires=ff-runner-xvfb.service
+
+[Service]
+User=ffrunner
+Environment=DISPLAY=:99
+ExecStart=/usr/bin/fluxbox
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

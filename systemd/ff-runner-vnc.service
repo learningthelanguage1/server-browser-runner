@@ -1,0 +1,13 @@
+[Unit]
+Description=FunFluen Browser Runner VNC
+After=ff-runner-xvfb.service
+Requires=ff-runner-xvfb.service
+
+[Service]
+User=ffrunner
+Environment=DISPLAY=:99
+ExecStart=/usr/bin/x11vnc -display :99 -localhost -rfbport 5901 -forever -shared -nopw
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,21 @@
+{
+  "name": "funfluen-linux-browser-agent-runner",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "pnpm build && node --test tests/*.test.mjs",
+    "runner": "node dist/index.js"
+  },
+  "dependencies": {
+    "playwright": "^1.49.1",
+    "yaml": "^2.7.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.2"
+  }
+}

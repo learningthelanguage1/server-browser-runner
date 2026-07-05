@@ -1,0 +1,17 @@
+[Unit]
+Description=FunFluen Linux Browser Agent Runner
+After=network.target ff-runner-xvfb.service ff-runner-wm.service
+Requires=ff-runner-xvfb.service
+
+[Service]
+User=ffrunner
+WorkingDirectory=/srv/ff-browser-runner/app
+Environment=NODE_ENV=production
+Environment=DISPLAY=:99
+Environment=FF_RUNNER_SECRET=replace-with-env-or-secret-file
+ExecStart=/usr/bin/node dist/index.js
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

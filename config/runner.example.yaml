@@ -1,0 +1,88 @@
+runner:
+  id: linux_runner_01
+  name: funfluen-linux-browser-agent-runner-01
+  poll_interval_seconds: 10
+  max_active_tasks: 1
+  lease_seconds: 900
+  local_spool_path: /srv/ff-browser-runner/spool/runner.sqlite
+
+brain:
+  base_url: https://automation.funfluen.com
+  runner_secret_env: FF_RUNNER_SECRET
+  timeout_seconds: 30
+
+browser:
+  engine: chromium
+  channel: chrome
+  headless: false
+  viewport:
+    width: 1440
+    height: 1000
+  locale: en-US
+  timezone_id: Asia/Tbilisi
+  artifacts_dir: /srv/ff-browser-runner/artifacts
+  traces_enabled: true
+  screenshot_on_failure: true
+  screenshot_on_success: true
+
+providers:
+  fake_echo:
+    enabled: true
+    permission_required: false
+    permission_status: approved
+    permission_ref: null
+    adapter: browser
+    target_url: https://automation.funfluen.com/runner-test-chat
+    allowed_domains:
+      - automation.funfluen.com
+    profile_dir: /srv/ff-browser-runner/profiles/fake_echo
+    min_gap_seconds: 1
+    max_tasks_per_hour: 100
+    max_tasks_per_day: 500
+    timeout_seconds: 60
+
+  internal:
+    enabled: true
+    permission_required: false
+    permission_status: approved
+    permission_ref: null
+    adapter: browser
+    target_url: https://automation.funfluen.com/runner-test-chat
+    allowed_domains:
+      - automation.funfluen.com
+    profile_dir: /srv/ff-browser-runner/profiles/internal
+    min_gap_seconds: 10
+    max_tasks_per_hour: 60
+    max_tasks_per_day: 300
+    timeout_seconds: 300
+
+  chatgpt:
+    enabled: true
+    permission_required: true
+    permission_status: approved
+    permission_ref: openai_permission_2026_07
+    adapter: browser
+    target_url: https://chatgpt.com/
+    allowed_domains:
+      - chatgpt.com
+      - chat.openai.com
+    profile_dir: /srv/ff-browser-runner/profiles/chatgpt
+    min_gap_seconds: 180
+    max_tasks_per_hour: 10
+    max_tasks_per_day: 80
+    timeout_seconds: 900
+
+  claude:
+    enabled: false
+    permission_required: true
+    permission_status: not_approved
+    permission_ref: null
+    adapter: browser
+    target_url: https://claude.ai/
+    allowed_domains:
+      - claude.ai
+    profile_dir: /srv/ff-browser-runner/profiles/claude
+    min_gap_seconds: 180
+    max_tasks_per_hour: 10
+    max_tasks_per_day: 80
+    timeout_seconds: 900
