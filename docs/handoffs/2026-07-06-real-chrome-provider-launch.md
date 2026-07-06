@@ -23,6 +23,12 @@ profile path when `browser.channel` is `chrome` and `headless` is false.
 
 ## Verification
 
-- 2026-07-06: Pending after deployment to the runner server.
+- 2026-07-06: `corepack pnpm test` passed locally with 16 runner checks.
+- 2026-07-06: Pushed to `learningthelanguage1/server-browser-runner`
+  `development` at commit `e6b8d8e`.
+- 2026-07-06: Deployed to `/srv/ff-browser-runner/app`, built with
+  `corepack pnpm build`, and restarted `ff-browser-runner`.
+- 2026-07-06: ChatGPT and Claude login windows were reopened in VNC through
+  regular Google Chrome with persistent provider profiles.
 
 Notion was not updated from this thread.
