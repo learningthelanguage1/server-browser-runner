@@ -1,4 +1,5 @@
 import type { ProviderAdapter } from "../ProviderAdapter.js";
+import type { Page } from "playwright";
 import type { AgentTask, AgentTaskResult, RunnerConfig } from "../../types.js";
 import { assertProviderPermission } from "../../security/PermissionGate.js";
 import { BrowserProfileManager } from "../../browser/BrowserProfileManager.js";
@@ -56,11 +57,13 @@ export class ClaudeWebAdapter implements ProviderAdapter {
       timings.prompt_sent_at = new Date().toISOString();
       await page.waitForTimeout(1500);
       if ((await page.locator(claudeSelectors.rateLimit).count()) > 0) throw new Error("PROVIDER_RATE_LIMITED");
-      const answer = page.locator(claudeSelectors.assistantResponse).last();
-      const done = await waitForDoneMarkerOrStable(answer, task.expected_output?.done_marker, (task.timeout_seconds ?? 900) * 1000);
+      const answer = await lastNonEmptyClaudeResponse(page);
+      const done = await waitForDoneMarkerOrStable(answer, task.expected_output?.done_marker, (task.timeout_seconds ?? 900) * 1000, {
+        markerSeen: async () => markerAppearsTwice(await page.locator("body").textContent(), task.expected_output?.done_marker)
+      });
       if (done.status === "timeout") throw new Error("RESPONSE_TIMEOUT");
       timings.response_completed_at = new Date().toISOString();
-      const captured = await captureLastAnswer(page, answer);
+      const captured = await captureClaudeAnswer(page, answer, task);
       const screenshot = await new ScreenshotService(this.config).capture(page, task.task_id);
       artifacts.push(screenshot);
       return {
@@ -88,4 +91,41 @@ export class ClaudeWebAdapter implements ProviderAdapter {
 
 function cleanMarker(text: string, marker?: string) {
   return marker ? text.replace(marker, "").trim() : text.trim();
+}
+
+export async function lastNonEmptyClaudeResponse(page: Page) {
+  const messages = page.locator(claudeSelectors.assistantResponse);
+  for (let index = (await messages.count()) - 1; index >= 0; index -= 1) {
+    const message = messages.nth(index);
+    if (((await message.textContent().catch(() => "")) ?? "").trim()) return message;
+  }
+  return messages.last();
+}
+
+function markerAppearsTwice(text: string | null, marker?: string) {
+  if (!text || !marker) return false;
+  return text.split(marker).length - 1 >= 2;
+}
+
+async function captureClaudeAnswer(page: Page, answer: ReturnType<Page["locator"]>, task: AgentTask) {
+  try {
+    return await captureLastAnswer(page, answer);
+  } catch (error) {
+    if (!String(error).includes("RESPONSE_EMPTY")) throw error;
+    const text = extractClaudeAnswerFromBody((await page.locator("body").textContent().catch(() => "")) ?? "", task);
+    if (text.trim()) return { method: "dom" as const, text };
+    throw error;
+  }
+}
+
+export function extractClaudeAnswerFromBody(bodyText: string, task: AgentTask) {
+  const marker = task.expected_output?.done_marker;
+  if (!marker) return "";
+  const markerIndex = bodyText.lastIndexOf(marker);
+  if (markerIndex === -1) return "";
+  const beforeMarker = bodyText.slice(0, markerIndex);
+  const required = typeof task.expected_output?.must_include === "string" ? task.expected_output.must_include : task.expected_output?.must_include?.[0];
+  const start = required ? beforeMarker.lastIndexOf(required) : -1;
+  if (start !== -1) return `${beforeMarker.slice(start).trim()}\n${marker}`;
+  return `${beforeMarker.slice(Math.max(0, beforeMarker.length - 8000)).trim()}\n${marker}`;
 }

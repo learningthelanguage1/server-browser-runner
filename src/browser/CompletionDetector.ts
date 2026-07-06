@@ -2,6 +2,7 @@ import type { Locator } from "playwright";
 
 type WaitForDoneOptions = {
   isBusy?: () => Promise<boolean>;
+  markerSeen?: () => Promise<boolean>;
   stableMs?: number;
   pollMs?: number;
 };
@@ -20,7 +21,7 @@ export async function waitForDoneMarkerOrStable(
   while (Date.now() - started < timeoutMs) {
     const text = (await locator.textContent().catch(() => "")) ?? "";
     const busy = (await options.isBusy?.().catch(() => false)) ?? false;
-    if (marker && text.includes(marker)) {
+    if (marker && (text.includes(marker) || (await options.markerSeen?.().catch(() => false)))) {
       return { status: "marker" as const, text };
     }
     if (text !== last) {

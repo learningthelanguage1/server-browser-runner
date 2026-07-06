@@ -14,6 +14,7 @@ import { waitForDoneMarkerOrStable } from "../dist/browser/CompletionDetector.js
 import { chatgptHealth } from "../dist/providers/chatgpt/chatgptHealth.js";
 import { isArticleChainTask, timeoutErrorForChatGptHealth } from "../dist/providers/chatgpt/ChatGptWebAdapter.js";
 import { claudeHealth } from "../dist/providers/claude/claudeHealth.js";
+import { extractClaudeAnswerFromBody, lastNonEmptyClaudeResponse } from "../dist/providers/claude/ClaudeWebAdapter.js";
 import { envFromFile, preflight, preflightWithEnvFile } from "../dist/cli/preflight.js";
 
 describe("runner MVP guards", () => {
@@ -203,6 +204,19 @@ describe("runner MVP guards", () => {
     assert.equal(done.text, "Final review complete.");
   });
 
+  it("accepts an external marker signal when the watched response node is empty", async () => {
+    const answer = {
+      textContent: async () => ""
+    };
+
+    const done = await waitForDoneMarkerOrStable(answer, "[[FF_DONE:task_1]]", 200, {
+      pollMs: 1,
+      markerSeen: async () => true
+    });
+
+    assert.equal(done.status, "marker");
+  });
+
   it("reports ChatGPT too-many-requests screens as rate limited", async () => {
     const page = {
       url: () => "https://chatgpt.com/",
@@ -291,6 +305,42 @@ describe("runner MVP guards", () => {
     };
 
     assert.equal(await claudeHealth(page), "login_required");
+  });
+
+  it("uses the last non-empty Claude response instead of a trailing spinner node", async () => {
+    const nodes = ["older answer", "CLAUDE_BROWSER_RUNNER_OK\n[[FF_DONE:task_1]]", ""];
+    const page = {
+      locator: () => ({
+        count: async () => nodes.length,
+        nth: (index) => ({ textContent: async () => nodes[index] }),
+        last: () => ({ textContent: async () => nodes.at(-1) })
+      })
+    };
+
+    const answer = await lastNonEmptyClaudeResponse(page);
+
+    assert.equal(await answer.textContent(), "CLAUDE_BROWSER_RUNNER_OK\n[[FF_DONE:task_1]]");
+  });
+
+  it("extracts Claude answer text from page body when response DOM capture is empty", () => {
+    const task = {
+      task_id: "task_1",
+      job_type: "llm_browser_prompt",
+      provider: "claude",
+      adapter: "browser",
+      target_url: "https://claude.ai/",
+      prompt: "Say only:\nCLAUDE_BROWSER_RUNNER_OK\n\nAt the end, print:\n[[FF_DONE:task_1]]",
+      expected_output: {
+        must_include: "CLAUDE_BROWSER_RUNNER_OK",
+        done_marker: "[[FF_DONE:task_1]]"
+      }
+    };
+    const body = "Say only: CLAUDE_BROWSER_RUNNER_OK At the end, print: [[FF_DONE:task_1]] CLAUDE_BROWSER_RUNNER_OK [[FF_DONE:task_1]] Cookie settings";
+
+    assert.equal(
+      extractClaudeAnswerFromBody(body, task),
+      "CLAUDE_BROWSER_RUNNER_OK\n[[FF_DONE:task_1]]"
+    );
   });
 
   it("does not claim a second task while one is active", async () => {

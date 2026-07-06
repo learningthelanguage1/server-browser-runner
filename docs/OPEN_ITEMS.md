@@ -1,5 +1,6 @@
 # Open Items
 
+- 2026-07-07 resolved: Claude proof task answered correctly but timed out because Claude left a trailing empty/spinner message node and the visible answer marker was not available through the watched response node. Claude capture now watches the last non-empty assistant response and allows the visible done marker to complete from the page body when it appears as the second marker occurrence. Live proof `task_claude_permission_test_004` reached `accepted` with clean text `CLAUDE_BROWSER_RUNNER_OK`.
 - 2026-07-06 resolved: ChatGPT answers are no longer captured while the stop-generation button is still visible, preventing short process notes such as "I'll review..." from being submitted as completed article-chain outputs.
 - 2026-07-06 resolved: Blank ChatGPT loading screens at `chatgpt.com/` now wait as `loading` instead of blocking the task as `LOGIN_REQUIRED`; actual login pages and login text still stop for operator action.
 - 2026-07-06 resolved: ChatGPT too-many-requests modals that appear after prompt paste now report provider cooldown instead of generic send-button selector failure.
