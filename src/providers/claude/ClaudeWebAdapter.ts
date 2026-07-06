@@ -54,6 +54,8 @@ export class ClaudeWebAdapter implements ProviderAdapter {
       await page.keyboard.press(process.platform === "darwin" ? "Meta+V" : "Control+V");
       await page.locator(claudeSelectors.sendButton).first().click();
       timings.prompt_sent_at = new Date().toISOString();
+      await page.waitForTimeout(1500);
+      if ((await page.locator(claudeSelectors.rateLimit).count()) > 0) throw new Error("PROVIDER_RATE_LIMITED");
       const answer = page.locator(claudeSelectors.assistantResponse).last();
       const done = await waitForDoneMarkerOrStable(answer, task.expected_output?.done_marker, (task.timeout_seconds ?? 900) * 1000);
       if (done.status === "timeout") throw new Error("RESPONSE_TIMEOUT");

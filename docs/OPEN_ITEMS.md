@@ -4,6 +4,7 @@
 - 2026-07-06 active: ChatGPT live article proof is blocked on manual login for `/srv/ff-browser-runner/profiles/chatgpt`; Brain chain `article-chain-b031f146-9dc3-48f8-af22-731a5f098d0c` now records `LOGIN_REQUIRED` with screenshot artifact after the envelope fix.
 - 2026-07-06 resolved: Provider browser sessions now open regular Google Chrome and attach over remote debugging instead of launching Playwright-managed Chrome windows, reducing login friction while keeping one shared browser path for login, self-check, and execution.
 - 2026-07-06 resolved: Claude self-check now treats the composer as readiness because Claude shows the send control only after text is entered.
+- 2026-07-06 resolved: Claude execution now treats post-send session-limit UI as `PROVIDER_RATE_LIMITED` and no longer captures the whole page as the assistant answer.
 - 2026-07-05: Brain server endpoints must be added or mapped on the FunFluen OS side before live queue runs can be proven.
 - 2026-07-05 resolved: Brain server endpoints and `/runner-test-chat` are deployed live on `automation.funfluen.com` at Brain commit `c85b4f70288a93b3273ea22d7da33e14edad71ff`.
 - 2026-07-05: ChatGPT live proof still needs the Linux server profile to be logged in manually over localhost-only VNC.
