@@ -25,6 +25,7 @@ export type ProviderHealth = {
     | "login_required"
     | "rate_limited"
     | "human_check_required"
+    | "loading"
     | "permission_blocked"
     | "selector_broken"
     | "unknown_error";

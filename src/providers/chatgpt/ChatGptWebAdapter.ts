@@ -29,7 +29,7 @@ export class ChatGptWebAdapter implements ProviderAdapter {
       context = await new BrowserProfileManager(this.config).open(this.config.providers.chatgpt);
       page = await context.newPage();
       await page.goto(this.config.providers.chatgpt.target_url, { waitUntil: "domcontentloaded" });
-      return { provider: this.provider, status: await chatgptHealth(page), currentUrl: page.url() };
+      return { provider: this.provider, status: await waitForChatGptHealth(page), currentUrl: page.url() };
     } catch (error) {
       return { provider: this.provider, status: "unknown_error" as const, currentUrl: page?.url(), details: String(error) };
     } finally {
@@ -45,16 +45,18 @@ export class ChatGptWebAdapter implements ProviderAdapter {
     const timings: Record<string, string> = { claimed_at: new Date().toISOString() };
     try {
       await page.goto(task.target_url, { waitUntil: "domcontentloaded" });
-      const health = await chatgptHealth(page);
+      const health = await waitForChatGptHealth(page);
       if (health === "login_required") throw new Error("LOGIN_REQUIRED");
       if (health === "rate_limited") throw new Error("PROVIDER_RATE_LIMITED");
       if (health === "human_check_required") throw new Error("CAPTCHA_OR_HUMAN_CHECK");
+      if (health === "loading") throw new Error("RESPONSE_TIMEOUT");
       if (health !== "ready") throw new Error("SELECTOR_CHANGED");
       if (isArticleChainTask(task)) {
         await openFreshChat(page);
-        const freshHealth = await chatgptHealth(page);
+        const freshHealth = await waitForChatGptHealth(page);
         if (freshHealth === "rate_limited") throw new Error("PROVIDER_RATE_LIMITED");
         if (freshHealth === "human_check_required") throw new Error("CAPTCHA_OR_HUMAN_CHECK");
+        if (freshHealth === "loading") throw new Error("RESPONSE_TIMEOUT");
         if (freshHealth !== "ready") throw new Error("SELECTOR_CHANGED");
       }
       await page.locator(chatgptSelectors.composer).first().click();
@@ -118,6 +120,16 @@ export function timeoutErrorForChatGptHealth(status: string) {
   if (status === "human_check_required") return "CAPTCHA_OR_HUMAN_CHECK";
   if (status === "login_required") return "LOGIN_REQUIRED";
   return "RESPONSE_TIMEOUT";
+}
+
+export async function waitForChatGptHealth(page: Page, timeoutMs = 45000) {
+  const deadline = Date.now() + timeoutMs;
+  let status = await chatgptHealth(page);
+  while (status === "loading" && Date.now() < deadline) {
+    await page.waitForTimeout(1000);
+    status = await chatgptHealth(page);
+  }
+  return status;
 }
 
 async function openFreshChat(page: Page) {

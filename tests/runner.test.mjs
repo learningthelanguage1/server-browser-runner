@@ -213,6 +213,7 @@ describe("runner MVP guards", () => {
 
   it("maps ChatGPT timeout screens to provider cooldown when rate limited", () => {
     assert.equal(timeoutErrorForChatGptHealth("rate_limited"), "PROVIDER_COOLDOWN");
+    assert.equal(timeoutErrorForChatGptHealth("loading"), "RESPONSE_TIMEOUT");
     assert.equal(timeoutErrorForChatGptHealth("ready"), "RESPONSE_TIMEOUT");
   });
 
@@ -250,13 +251,21 @@ describe("runner MVP guards", () => {
     assert.equal(await claudeHealth(page), "login_required");
   });
 
-  it("reports public provider home pages without composer as login required", async () => {
+  it("does not treat blank ChatGPT loading pages as logged out", async () => {
+    const page = {
+      url: () => "https://chatgpt.com/",
+      locator: () => ({ count: async () => 0 })
+    };
+
+    assert.equal(await chatgptHealth(page), "loading");
+  });
+
+  it("reports public Claude home pages without composer as login required", async () => {
     const page = {
       url: () => "https://claude.ai/",
       locator: () => ({ count: async () => 0 })
     };
 
-    assert.equal(await chatgptHealth(page), "login_required");
     assert.equal(await claudeHealth(page), "login_required");
   });
 
