@@ -11,7 +11,7 @@ import { RunnerLoop } from "../dist/runner/RunnerLoop.js";
 import { browserFailedResult } from "../dist/providers/browserFailureResult.js";
 import { captureLastAnswer } from "../dist/browser/CaptureEngine.js";
 import { chatgptHealth } from "../dist/providers/chatgpt/chatgptHealth.js";
-import { isArticleChainTask } from "../dist/providers/chatgpt/ChatGptWebAdapter.js";
+import { isArticleChainTask, timeoutErrorForChatGptHealth } from "../dist/providers/chatgpt/ChatGptWebAdapter.js";
 import { claudeHealth } from "../dist/providers/claude/claudeHealth.js";
 import { envFromFile, preflight, preflightWithEnvFile } from "../dist/cli/preflight.js";
 
@@ -209,6 +209,11 @@ describe("runner MVP guards", () => {
       target_url: "https://chatgpt.com/",
       prompt: "Write"
     }), false);
+  });
+
+  it("maps ChatGPT timeout screens to provider cooldown when rate limited", () => {
+    assert.equal(timeoutErrorForChatGptHealth("rate_limited"), "PROVIDER_COOLDOWN");
+    assert.equal(timeoutErrorForChatGptHealth("ready"), "RESPONSE_TIMEOUT");
   });
 
   it("reports provider human checks explicitly", async () => {

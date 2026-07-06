@@ -71,7 +71,7 @@ export class ChatGptWebAdapter implements ProviderAdapter {
       timings.prompt_sent_at = new Date().toISOString();
       const answer = page.locator(chatgptSelectors.assistantResponse).last();
       const done = await waitForDoneMarkerOrStable(answer, task.expected_output?.done_marker, (task.timeout_seconds ?? 900) * 1000);
-      if (done.status === "timeout") throw new Error("RESPONSE_TIMEOUT");
+      if (done.status === "timeout") throw new Error(timeoutErrorForChatGptHealth(await chatgptHealth(page)));
       timings.response_completed_at = new Date().toISOString();
       const captured = await captureLastAnswer(page, answer);
       const screenshot = await new ScreenshotService(this.config).capture(page, task.task_id);
@@ -111,6 +111,13 @@ export function isArticleChainTask(task: AgentTask) {
     chainMeta &&
     typeof chainMeta === "object"
   );
+}
+
+export function timeoutErrorForChatGptHealth(status: string) {
+  if (status === "rate_limited") return "PROVIDER_COOLDOWN";
+  if (status === "human_check_required") return "CAPTCHA_OR_HUMAN_CHECK";
+  if (status === "login_required") return "LOGIN_REQUIRED";
+  return "RESPONSE_TIMEOUT";
 }
 
 async function openFreshChat(page: Page) {
