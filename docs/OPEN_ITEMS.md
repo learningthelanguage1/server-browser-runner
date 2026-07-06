@@ -1,5 +1,6 @@
 # Open Items
 
+- 2026-07-06 resolved: ChatGPT too-many-requests modals that appear after prompt paste now report provider cooldown instead of generic send-button selector failure.
 - 2026-07-06 resolved: Runner now unwraps Brain response envelopes before reading claim/upload/submit payloads, so live `claim-next-task` responses under `data.task` are executed instead of silently ignored.
 - 2026-07-06 active: ChatGPT live article proof is blocked on manual login for `/srv/ff-browser-runner/profiles/chatgpt`; Brain chain `article-chain-b031f146-9dc3-48f8-af22-731a5f098d0c` records `LOGIN_REQUIRED` with screenshot artifact, and direct proof task `task_chatgpt_login_required_20260706_133858` now reaches `blocked_for_operator` with `LOGIN_REQUIRED`.
 - 2026-07-06 resolved: First ChatGPT production proof passed end to end. Brain task `task_openai_permission_test_001` reached `accepted`, result validation passed, clean text was `ELAINE_PROMPT_CHAIN_OK`, capture method was `dom`, screenshot artifact was uploaded, and runner local spool stayed empty.

@@ -52,6 +52,7 @@ export class ChatGptWebAdapter implements ProviderAdapter {
       await page.locator(chatgptSelectors.composer).first().click();
       await page.evaluate((prompt) => navigator.clipboard.writeText(prompt), task.prompt);
       await page.keyboard.press(process.platform === "darwin" ? "Meta+V" : "Control+V");
+      if ((await chatgptHealth(page)) === "rate_limited") throw new Error("PROVIDER_COOLDOWN");
       const sendButton = page.locator(chatgptSelectors.sendButton).first();
       try {
         await sendButton.waitFor({ state: "visible", timeout: 5000 });

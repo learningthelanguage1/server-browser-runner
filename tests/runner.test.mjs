@@ -178,6 +178,17 @@ describe("runner MVP guards", () => {
     await assert.rejects(() => captureLastAnswer(page, answer), /RESPONSE_EMPTY/);
   });
 
+  it("reports ChatGPT too-many-requests screens as rate limited", async () => {
+    const page = {
+      url: () => "https://chatgpt.com/",
+      locator: (selector) => ({
+        count: async () => (selector.includes("too many requests") ? 1 : 0)
+      })
+    };
+
+    assert.equal(await chatgptHealth(page), "rate_limited");
+  });
+
   it("reports provider human checks explicitly", async () => {
     const page = {
       url: () => "https://claude.ai/chats",
