@@ -72,7 +72,9 @@ export class ChatGptWebAdapter implements ProviderAdapter {
       }
       timings.prompt_sent_at = new Date().toISOString();
       const answer = page.locator(chatgptSelectors.assistantResponse).last();
-      const done = await waitForDoneMarkerOrStable(answer, task.expected_output?.done_marker, (task.timeout_seconds ?? 900) * 1000);
+      const done = await waitForDoneMarkerOrStable(answer, task.expected_output?.done_marker, (task.timeout_seconds ?? 900) * 1000, {
+        isBusy: () => isChatGptGenerating(page)
+      });
       if (done.status === "timeout") throw new Error(timeoutErrorForChatGptHealth(await chatgptHealth(page)));
       timings.response_completed_at = new Date().toISOString();
       const captured = await captureLastAnswer(page, answer);
@@ -130,6 +132,10 @@ export async function waitForChatGptHealth(page: Page, timeoutMs = 45000) {
     status = await chatgptHealth(page);
   }
   return status;
+}
+
+export async function isChatGptGenerating(page: Page) {
+  return page.locator(chatgptSelectors.stopButton).first().isVisible().catch(() => false);
 }
 
 async function openFreshChat(page: Page) {

@@ -10,6 +10,7 @@ import { LocalSpool } from "../dist/runner/LocalSpool.js";
 import { RunnerLoop } from "../dist/runner/RunnerLoop.js";
 import { browserFailedResult } from "../dist/providers/browserFailureResult.js";
 import { captureLastAnswer } from "../dist/browser/CaptureEngine.js";
+import { waitForDoneMarkerOrStable } from "../dist/browser/CompletionDetector.js";
 import { chatgptHealth } from "../dist/providers/chatgpt/chatgptHealth.js";
 import { isArticleChainTask, timeoutErrorForChatGptHealth } from "../dist/providers/chatgpt/ChatGptWebAdapter.js";
 import { claudeHealth } from "../dist/providers/claude/claudeHealth.js";
@@ -177,6 +178,29 @@ describe("runner MVP guards", () => {
     };
 
     await assert.rejects(() => captureLastAnswer(page, answer), /RESPONSE_EMPTY/);
+  });
+
+  it("does not treat stable text as done while provider is still generating", async () => {
+    let text = "I will review the draft.";
+    let busyReads = 0;
+    const answer = {
+      textContent: async () => text
+    };
+
+    const donePromise = waitForDoneMarkerOrStable(answer, undefined, 200, {
+      stableMs: 1,
+      pollMs: 1,
+      isBusy: async () => {
+        busyReads += 1;
+        if (busyReads === 5) text = "Final review complete.";
+        return busyReads <= 5;
+      }
+    });
+
+    const done = await donePromise;
+
+    assert.equal(done.status, "stable");
+    assert.equal(done.text, "Final review complete.");
   });
 
   it("reports ChatGPT too-many-requests screens as rate limited", async () => {

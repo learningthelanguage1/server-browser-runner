@@ -1,5 +1,6 @@
 # Open Items
 
+- 2026-07-06 resolved: ChatGPT answers are no longer captured while the stop-generation button is still visible, preventing short process notes such as "I'll review..." from being submitted as completed article-chain outputs.
 - 2026-07-06 resolved: Blank ChatGPT loading screens at `chatgpt.com/` now wait as `loading` instead of blocking the task as `LOGIN_REQUIRED`; actual login pages and login text still stop for operator action.
 - 2026-07-06 resolved: ChatGPT too-many-requests modals that appear after prompt paste now report provider cooldown instead of generic send-button selector failure.
 - 2026-07-06 resolved: ChatGPT too-many-requests modals that appear while waiting for an answer now report provider cooldown instead of generic response timeout.
