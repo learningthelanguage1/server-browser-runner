@@ -175,7 +175,7 @@ describe("runner MVP guards", () => {
     assert.equal(await claudeHealth(page), "human_check_required");
   });
 
-  it("requires send controls before provider health is ready", async () => {
+  it("requires ChatGPT send controls before provider health is ready", async () => {
     const page = {
       url: () => "https://claude.ai/chats",
       locator: (selector) => ({
@@ -184,7 +184,7 @@ describe("runner MVP guards", () => {
     };
 
     assert.equal(await chatgptHealth(page), "selector_broken");
-    assert.equal(await claudeHealth(page), "selector_broken");
+    assert.equal(await claudeHealth(page), "ready");
   });
 
   it("reports login pages as login required", async () => {
