@@ -52,7 +52,13 @@ export class ChatGptWebAdapter implements ProviderAdapter {
       await page.locator(chatgptSelectors.composer).first().click();
       await page.evaluate((prompt) => navigator.clipboard.writeText(prompt), task.prompt);
       await page.keyboard.press(process.platform === "darwin" ? "Meta+V" : "Control+V");
-      await page.locator(chatgptSelectors.sendButton).first().click();
+      const sendButton = page.locator(chatgptSelectors.sendButton).first();
+      try {
+        await sendButton.waitFor({ state: "visible", timeout: 5000 });
+        await sendButton.click();
+      } catch {
+        await page.keyboard.press("Enter");
+      }
       timings.prompt_sent_at = new Date().toISOString();
       const answer = page.locator(chatgptSelectors.assistantResponse).last();
       const done = await waitForDoneMarkerOrStable(answer, task.expected_output?.done_marker, (task.timeout_seconds ?? 900) * 1000);

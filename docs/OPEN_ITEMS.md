@@ -6,6 +6,7 @@
 - 2026-07-06 resolved: Runner now survives temporary Brain claim failures, including short Cloudflare/proxy 502 windows during Brain restarts, and retries on the next poll instead of crashing.
 - 2026-07-06 resolved: Live Brain now has the required approved `chatgpt_main` provider account record, so ChatGPT tasks with `provider_account_id=chatgpt_main` can be released to the runner.
 - 2026-07-06 resolved: Provider browser sessions now open regular Google Chrome and attach over remote debugging instead of launching Playwright-managed Chrome windows, reducing login friction while keeping one shared browser path for login, self-check, and execution.
+- 2026-07-06 resolved: ChatGPT send now waits for the post-paste send control and falls back to Enter, so article-chain prompts are not blocked when the send button appears only after text is entered.
 - 2026-07-06 resolved: Claude self-check now treats the composer as readiness because Claude shows the send control only after text is entered.
 - 2026-07-06 resolved: Claude execution now treats post-send session-limit UI as `PROVIDER_RATE_LIMITED` and no longer captures the whole page as the assistant answer.
 - 2026-07-05: Brain server endpoints must be added or mapped on the FunFluen OS side before live queue runs can be proven.
