@@ -36,7 +36,7 @@ export class RunnerLoop {
   async runOnce(): Promise<void> {
     await this.flushSpool();
     if (this.lock.current()) return;
-    const task = await this.brain.claimNextTask();
+    const task = await this.claimNextTask();
     if (!task) return;
     await this.executeClaimedTask(task);
   }
@@ -63,6 +63,15 @@ export class RunnerLoop {
       await this.flushSpool();
     } finally {
       this.lock.release(task.task_id);
+    }
+  }
+
+  private async claimNextTask(): Promise<AgentTask | null> {
+    try {
+      return await this.brain.claimNextTask();
+    } catch (error) {
+      console.warn("Brain claim failed; will retry on next poll", error);
+      return null;
     }
   }
 

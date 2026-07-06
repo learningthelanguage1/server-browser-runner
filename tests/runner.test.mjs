@@ -124,6 +124,21 @@ describe("runner MVP guards", () => {
     assert.equal(new LocalSpool(config.runner.local_spool_path).due().length, 0);
   });
 
+  it("keeps running when Brain task claim is temporarily unavailable", async () => {
+    const config = testConfig();
+    let claimed = false;
+    const brain = {
+      claimNextTask: async () => {
+        claimed = true;
+        throw new Error("Brain /claim-next-task failed: 502");
+      }
+    };
+
+    await new RunnerLoop(config, brain, {}).runOnce();
+
+    assert.equal(claimed, true);
+  });
+
   it("keeps browser failure screenshot artifacts", () => {
     const result = browserFailedResult(
       "runner_1",
