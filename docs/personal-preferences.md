@@ -6,3 +6,4 @@
 - 2026-07-05: Claude approval is confirmed for the runner; keep Claude enabled behind `claude_permission_2026_07`.
 - 2026-07-05: Keep runner and Brain changes in their owning repositories and push each code change only to the correct remote.
 - 2026-07-05: Prioritize proving the full runner flow now; do not spend extra cycles on optional hardening before the flow works.
+- 2026-07-06: Use regular Google Chrome for provider login/execution where possible; avoid Playwright-launched Chrome if it causes provider robot/login friction.
