@@ -71,7 +71,14 @@ export class BrainClient {
       if (!response.ok) {
         throw new Error(`Brain ${path} failed: ${response.status} ${await response.text()}`);
       }
-      return (await response.json()) as Record<string, unknown>;
+      const json = (await response.json()) as Record<string, unknown>;
+      if (json && typeof json === "object" && "data" in json && "error" in json) {
+        if (json.error) {
+          throw new Error(`Brain ${path} failed: ${JSON.stringify(json.error)}`);
+        }
+        return (json.data ?? {}) as Record<string, unknown>;
+      }
+      return json;
     } finally {
       clearTimeout(timer);
     }
