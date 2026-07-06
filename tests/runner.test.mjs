@@ -11,6 +11,7 @@ import { RunnerLoop } from "../dist/runner/RunnerLoop.js";
 import { browserFailedResult } from "../dist/providers/browserFailureResult.js";
 import { captureLastAnswer } from "../dist/browser/CaptureEngine.js";
 import { chatgptHealth } from "../dist/providers/chatgpt/chatgptHealth.js";
+import { isArticleChainTask } from "../dist/providers/chatgpt/ChatGptWebAdapter.js";
 import { claudeHealth } from "../dist/providers/claude/claudeHealth.js";
 import { envFromFile, preflight, preflightWithEnvFile } from "../dist/cli/preflight.js";
 
@@ -187,6 +188,27 @@ describe("runner MVP guards", () => {
     };
 
     assert.equal(await chatgptHealth(page), "rate_limited");
+  });
+
+  it("opens fresh chats only for article-chain ChatGPT tasks", () => {
+    assert.equal(isArticleChainTask({
+      task_id: "article-chain-demo-step_0",
+      chain_id: "article-chain-demo",
+      job_type: "llm_browser_prompt",
+      provider: "chatgpt",
+      adapter: "browser",
+      target_url: "https://chatgpt.com/",
+      prompt: "Write",
+      metadata: { article_prompt_chain: { schema_name: "article_prompt_chain_v1" } }
+    }), true);
+    assert.equal(isArticleChainTask({
+      task_id: "normal-chatgpt-task",
+      job_type: "llm_browser_prompt",
+      provider: "chatgpt",
+      adapter: "browser",
+      target_url: "https://chatgpt.com/",
+      prompt: "Write"
+    }), false);
   });
 
   it("reports provider human checks explicitly", async () => {

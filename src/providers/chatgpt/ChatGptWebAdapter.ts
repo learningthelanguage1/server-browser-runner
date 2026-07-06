@@ -1,5 +1,6 @@
 import type { ProviderAdapter } from "../ProviderAdapter.js";
 import type { AgentTask, AgentTaskResult, RunnerConfig } from "../../types.js";
+import type { Page } from "playwright";
 import { BrowserProfileManager } from "../../browser/BrowserProfileManager.js";
 import { waitForDoneMarkerOrStable } from "../../browser/CompletionDetector.js";
 import { captureLastAnswer } from "../../browser/CaptureEngine.js";
@@ -49,6 +50,13 @@ export class ChatGptWebAdapter implements ProviderAdapter {
       if (health === "rate_limited") throw new Error("PROVIDER_RATE_LIMITED");
       if (health === "human_check_required") throw new Error("CAPTCHA_OR_HUMAN_CHECK");
       if (health !== "ready") throw new Error("SELECTOR_CHANGED");
+      if (isArticleChainTask(task)) {
+        await openFreshChat(page);
+        const freshHealth = await chatgptHealth(page);
+        if (freshHealth === "rate_limited") throw new Error("PROVIDER_RATE_LIMITED");
+        if (freshHealth === "human_check_required") throw new Error("CAPTCHA_OR_HUMAN_CHECK");
+        if (freshHealth !== "ready") throw new Error("SELECTOR_CHANGED");
+      }
       await page.locator(chatgptSelectors.composer).first().click();
       await page.evaluate((prompt) => navigator.clipboard.writeText(prompt), task.prompt);
       await page.keyboard.press(process.platform === "darwin" ? "Meta+V" : "Control+V");
@@ -93,4 +101,24 @@ export class ChatGptWebAdapter implements ProviderAdapter {
 
 function cleanMarker(text: string, marker?: string) {
   return marker ? text.replace(marker, "").trim() : text.trim();
+}
+
+export function isArticleChainTask(task: AgentTask) {
+  const chainMeta = task.metadata?.article_prompt_chain;
+  return Boolean(
+    task.provider === "chatgpt" &&
+    task.chain_id?.startsWith("article-chain-") &&
+    chainMeta &&
+    typeof chainMeta === "object"
+  );
+}
+
+async function openFreshChat(page: Page) {
+  const newChat = page.getByRole("link", { name: /new chat/i }).first();
+  try {
+    await newChat.click({ timeout: 3000 });
+  } catch {
+    await page.goto("https://chatgpt.com/?model=auto", { waitUntil: "domcontentloaded" });
+  }
+  await page.locator(chatgptSelectors.composer).first().waitFor({ state: "visible", timeout: 10000 });
 }
