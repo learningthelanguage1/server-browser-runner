@@ -2,6 +2,7 @@
 
 - 2026-07-06 resolved: Runner now unwraps Brain response envelopes before reading claim/upload/submit payloads, so live `claim-next-task` responses under `data.task` are executed instead of silently ignored.
 - 2026-07-06 active: ChatGPT live article proof is blocked on manual login for `/srv/ff-browser-runner/profiles/chatgpt`; Brain chain `article-chain-b031f146-9dc3-48f8-af22-731a5f098d0c` records `LOGIN_REQUIRED` with screenshot artifact, and direct proof task `task_chatgpt_login_required_20260706_133858` now reaches `blocked_for_operator` with `LOGIN_REQUIRED`.
+- 2026-07-06 resolved: First ChatGPT production proof passed end to end. Brain task `task_openai_permission_test_001` reached `accepted`, result validation passed, clean text was `ELAINE_PROMPT_CHAIN_OK`, capture method was `dom`, screenshot artifact was uploaded, and runner local spool stayed empty.
 - 2026-07-06 resolved: Runner now survives temporary Brain claim failures, including short Cloudflare/proxy 502 windows during Brain restarts, and retries on the next poll instead of crashing.
 - 2026-07-06 resolved: Live Brain now has the required approved `chatgpt_main` provider account record, so ChatGPT tasks with `provider_account_id=chatgpt_main` can be released to the runner.
 - 2026-07-06 resolved: Provider browser sessions now open regular Google Chrome and attach over remote debugging instead of launching Playwright-managed Chrome windows, reducing login friction while keeping one shared browser path for login, self-check, and execution.
